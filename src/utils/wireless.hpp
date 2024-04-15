@@ -45,7 +45,7 @@ namespace wireless
         else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
         {
             xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-            // esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+            esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
             printf("已连接\n");
             status = "";
         }

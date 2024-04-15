@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 #include "lang.hpp"
-
+#include "../../.config.hpp"
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
@@ -14,9 +14,12 @@
 #endif
 
 namespace oled {
-    U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);
+    U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);
 
     void init(void) {
+        #ifdef I2C_CLOCK_SPD
+            u8g2.setBusClock(I2C_CLOCK_SPD);
+        #endif
         u8g2.begin();
     }
 

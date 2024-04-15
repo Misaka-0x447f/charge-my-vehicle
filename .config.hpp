@@ -1,5 +1,8 @@
 #pragma once
 
+// 如果有显示乱码可以调小
+#define I2C_CLOCK_SPD 400000
+
 #define WIFI_SSID "XYN-Roaming"
 #define WIFI_PASSWORD "1qazxcft"
 

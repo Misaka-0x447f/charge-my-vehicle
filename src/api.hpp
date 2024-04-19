@@ -1,41 +1,33 @@
 #include "../.config.hpp"
-#include <HTTPClient.h>
+#include "utils/request.hpp"
 #include <ArduinoJson.h>
+#include <string>
+#include <functional>
 
 namespace api
 {
-    JsonDocument sendPostRequest(String url, JsonDocument header, JsonDocument body)
+    std::string authorization = "";
+    // 返回错误消息
+    JsonDocument login(std::function<void(const std::string &)> errorMsgCb)
     {
-        HTTPClient http;
-
-        http.begin(url);
-
-        // Add headers
-        for (JsonPair headerPair : header.as<JsonObject>())
+        JsonDocument body = JsonDocument();
+        body['userPhone'] = USER_NAME;
+        body['userPassword'] = USER_PASSWORD_HASH;
+        body['corpNo'] = USER_CORP_NO;
+        body['deviceNo'] = USER_DEVICE_NO;
+        body['loginType'] = "SZAPP";
+        JsonDocument res = request::post(String('http://iot.shzhida.com:6771/api/login'), JsonDocument(), body);
+        if (res.containsKey("error"))
         {
-            http.addHeader(headerPair.key().c_str(), headerPair.value().as<String>());
+            errorMsgCb(res["error"].as<std::string>());
+            return JsonDocument();
         }
-
-        // Convert body to string
-        String bodyStr;
-        serializeJson(body, bodyStr);
-
-        int httpResponseCode = http.POST(bodyStr);
-
-        JsonDocument jsonResponse;
-
-        if (httpResponseCode <= 0)
-            return jsonResponse;
-        if (http.getSize() <= 0)
-            return jsonResponse;
-        String response = http.getString();
-        DeserializationError error = deserializeJson(jsonResponse, response);
-
-        if (!error)
+        if (res.containsKey("data") && res["data"]["messge"] == "登录成功")
         {
-            return jsonResponse;
+            authorization = res["data"]["data"]["aliAccessToken"].as<std::string>();
+            return res;
         }
-
-        return jsonResponse; // empty json object
+        errorMsgCb(res["data"]["msg"]);
+        return JsonDocument();
     }
 }

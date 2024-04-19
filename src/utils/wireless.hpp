@@ -12,6 +12,10 @@
 namespace wireless
 {
     std::string status = "";
+    std::string globalMsg = "";
+    //       keySymbol    keyDesc
+    std::map<std::string, std::string> buttonOverride;
+    boolean failed = false;
 
     EventGroupHandle_t s_wifi_event_group;
 
@@ -30,7 +34,13 @@ namespace wireless
             
             wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
             printf("连接断开，SSID: %s, 原因: %d\n，等待重新启动", WIFI_SSID, event->reason);
-            status = "网络失败，等待重新启动";
+            status = "网络失败";
+            globalMsg = "网络失败，等待重新启动。\n点击“确认”立即重新启动。";
+            buttonOverride["*"] = "立即重新启动";
+            failed = true;
+            // buttonState::upButtonEvent.subscribe([]() {
+            //     esp_restart();
+            // });
             // Wait for 60 seconds
             vTaskDelay(60000 / portTICK_PERIOD_MS);
             // Restart the device

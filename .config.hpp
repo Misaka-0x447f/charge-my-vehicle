@@ -1,5 +1,6 @@
 #pragma once
 
+#define DEBUG 1
 // 如果有显示乱码可以调小
 #define I2C_CLOCK_SPD 400000
 

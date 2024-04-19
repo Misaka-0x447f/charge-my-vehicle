@@ -1,9 +1,12 @@
 #pragma once
 #include <map>
 #include <string>
+#include "./eventHandler.hpp"
 
 namespace buttonState
 {
+    EventHandler confirmButtonEvent;
+
     enum Button
     {
         Empty,
@@ -36,36 +39,49 @@ namespace buttonState
 
     volatile Button pressedButton = Button::Empty;
 
+    void fireButtonEventInMainLoop() {
+        if (pressedButton == Button::UP) {
+            // upButtonEvent.dispatch();
+        }
+        if (pressedButton == Button::DOWN) {
+            // downButtonEvent.dispatch();
+        }
+        if (pressedButton == Button::CANCEL) {
+            // cancelButtonEvent.dispatch();
+        }
+        if (pressedButton == Button::CONFIRM) {
+            confirmButtonEvent.dispatch();
+        }
+        pressedButton = Button::Empty;
+    }
+
     void IRAM_ATTR buttonPressHandler()
     {
         if (digitalRead(A0) == LOW)
         {
             pressedButton = Button::UP;
         }
-        else if (digitalRead(A1) == LOW)
+        if (digitalRead(A1) == LOW)
         {
             pressedButton = Button::DOWN;
         }
-        else if (digitalRead(A2) == LOW)
+        if (digitalRead(A2) == LOW)
         {
-            pressedButton = buttonState::Button::CANCEL;
+            pressedButton = Button::CANCEL;
         }
-        else if (digitalRead(A3) == LOW)
+        if (digitalRead(A3) == LOW)
         {
-            pressedButton = buttonState::Button::CONFIRM;
+            pressedButton = Button::CONFIRM;
         }
-        else
-        {
-            pressedButton = buttonState::Button::Empty;
-        }
+        // 在 main 中重置被按下的按钮的状态。
     }
 
     void buttonStateListenerInit()
     {
-        pinMode(A0, INPUT_PULLUP);
-        pinMode(A1, INPUT_PULLUP);
-        pinMode(A2, INPUT_PULLUP);
-        pinMode(A3, INPUT_PULLUP);
+        pinMode(A0, INPUT);
+        pinMode(A1, INPUT);
+        pinMode(A2, INPUT);
+        pinMode(A3, INPUT);
         attachInterrupt(digitalPinToInterrupt(A0), buttonPressHandler, CHANGE);
         attachInterrupt(digitalPinToInterrupt(A1), buttonPressHandler, CHANGE);
         attachInterrupt(digitalPinToInterrupt(A2), buttonPressHandler, CHANGE);

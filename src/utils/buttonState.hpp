@@ -2,9 +2,14 @@
 #include <map>
 #include <string>
 #include "./eventHandler.hpp"
+#include <functional>
+#include <vector>
 
 namespace buttonState
 {
+    EventHandler upButtonEvent;
+    EventHandler downButtonEvent;
+    EventHandler cancelButtonEvent;
     EventHandler confirmButtonEvent;
 
     enum Button
@@ -21,8 +26,26 @@ namespace buttonState
         {UP, "向上"},
         {DOWN, "向下"},
         {CANCEL, "取消"},
-        {CONFIRM, "好"}
+        {CONFIRM, "好"}};
+
+    struct ButtonData
+    {
+        Button button;
+        std::string label;
+        std::function<void()> callback;
     };
+
+    std::vector<std::vector<ButtonData>> globalButtonStack;
+
+    void pushButton(std::vector<ButtonData> buttonData)
+    {
+        globalButtonStack.push_back(buttonData);
+    }
+
+    void popButton()
+    {
+        globalButtonStack.pop_back();
+    }
 
     std::string getButtonName(Button buttonName)
     {
@@ -39,18 +62,61 @@ namespace buttonState
 
     volatile Button pressedButton = Button::Empty;
 
-    void fireButtonEventInMainLoop() {
-        if (pressedButton == Button::UP) {
-            // upButtonEvent.dispatch();
+    void fireButtonEventInMainLoop()
+    {
+        auto button = std::vector<ButtonData>();
+        if (!globalButtonStack.empty())
+        {
+            button = globalButtonStack.back();
         }
-        if (pressedButton == Button::DOWN) {
-            // downButtonEvent.dispatch();
+
+        if (pressedButton == Button::UP)
+        {
+            upButtonEvent.dispatch();
+            for (auto &buttonData : button)
+            {
+                if (buttonData.button == Button::UP)
+                {
+                    buttonData.callback();
+                    break;
+                }
+            }
         }
-        if (pressedButton == Button::CANCEL) {
-            // cancelButtonEvent.dispatch();
+        if (pressedButton == Button::DOWN)
+        {
+            downButtonEvent.dispatch();
+            for (auto &buttonData : button)
+            {
+                if (buttonData.button == Button::DOWN)
+                {
+                    buttonData.callback();
+                    break;
+                }
+            }
         }
-        if (pressedButton == Button::CONFIRM) {
+        if (pressedButton == Button::CANCEL)
+        {
+            cancelButtonEvent.dispatch();
+            for (auto &buttonData : button)
+            {
+                if (buttonData.button == Button::CANCEL)
+                {
+                    buttonData.callback();
+                    break;
+                }
+            }
+        }
+        if (pressedButton == Button::CONFIRM)
+        {
             confirmButtonEvent.dispatch();
+            for (auto &buttonData : button)
+            {
+                if (buttonData.button == Button::CONFIRM)
+                {
+                    buttonData.callback();
+                    break;
+                }
+            }
         }
         pressedButton = Button::Empty;
     }
@@ -73,7 +139,6 @@ namespace buttonState
         {
             pressedButton = Button::CONFIRM;
         }
-        // 在 main 中重置被按下的按钮的状态。
     }
 
     void buttonStateListenerInit()

@@ -7,6 +7,9 @@
 #include "./lang.hpp"
 #include "./type.hpp"
 #include "../../.config.hpp"
+#include <vector>
+#include "./buttonState.hpp"
+#include "./bitmaps.hpp"
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
@@ -16,6 +19,8 @@
 
 namespace oled
 {
+    std::vector<std::string> globalMsgStack;
+
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* clock=*/SCL, /* data=*/SDA, /* reset=*/U8X8_PIN_NONE);
 
     void init(void)
@@ -135,20 +140,40 @@ namespace oled
         } while (u8g2.nextPage());
     }
 
-    void drawMenu(const std::map<std::string, std::string> &buttons)
+    void drawMenu(std::vector<buttonState::ButtonData> buttonData)
     {
-        for (const auto &[key, value]: buttons)
+        std::map<buttonState::Button, bitmaps::Bitmap> buttonIcoData = {
+            {buttonState::Button::UP, bitmaps::upArrow},
+            {buttonState::Button::DOWN, bitmaps::downArrow},
+            {buttonState::Button::CANCEL, bitmaps::cancel},
+            {buttonState::Button::CONFIRM, bitmaps::confirm}
+        };
+        int i = 0;
+        for (auto& value : buttonData)
         {
-            // 按顺序先绘制一个反色的按钮，在正色绘制按钮描述，需要在绘制完成后记录当前按钮位置并在下一个像素开始继续绘制下一个
-            int pointer = 0;
+            auto currentIco = buttonIcoData[value.button];
             u8g2.setDrawColor(0);
-            u8g2.setFontMode(0);
-            u8g2.drawUTF8(pointer, u8g2.getDisplayHeight() - u8g2.getMaxCharHeight(), key.c_str());
-            pointer += u8g2.getUTF8Width(key.c_str());
-            u8g2.drawUTF8(pointer, u8g2.getDisplayHeight() - u8g2.getMaxCharHeight(), value.c_str());
-            pointer += u8g2.getUTF8Width(value.c_str());
+            // 按顺序先绘制一个按钮（drawXBMP），再绘制按钮描述，需要在绘制完成后记录当前按钮位置并在下一个像素开始继续绘制下一个
+            u8g2.drawXBMP(i, u8g2.getDisplayHeight() - currentIco.height, currentIco.width, currentIco.height, currentIco.data);
+            i += currentIco.width + 1;
+            if (value.label.empty())
+            {
+                continue;
+            }
             u8g2.setDrawColor(1);
+            u8g2.drawUTF8(i, u8g2.getDisplayHeight() - u8g2.getMaxCharHeight() + 1, lang::toString(value.label));
+            i += u8g2.getUTF8Width(lang::toString(value.label)) + 2;
         }
+    }
+
+    void pushMsgBox(std::string msg)
+    {
+        globalMsgStack.push_back(msg);
+        buttonState::pushButton({{buttonState::Button::UP, "好", []()
+                                  {
+                                      globalMsgStack.pop_back();
+                                      buttonState::popButton();
+                                  }}});
     }
 
     void drawGlobalFatalMsg(std::string msg)

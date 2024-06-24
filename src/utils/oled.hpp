@@ -128,7 +128,7 @@ namespace oled
 
     void drawLoop(std::function<void()> func)
     {
-        u8g2.setFont(u8g2_font_wqy12_t_gb2312);
+        u8g2.setFont(u8g2_font_wqy12_t_gb2312b);
         u8g2.setFontRefHeightExtendedText();
         u8g2.setDrawColor(1);
         u8g2.setFontPosTop();
@@ -186,7 +186,7 @@ namespace oled
         u8g2.firstPage();
         do
         {
-            drawUTF8WithWrap(0, 0, 0, msg.c_str());
+            drawUTF8WithWrap(0, 0, 14, msg.c_str());
         } while (u8g2.nextPage());
     }
 }

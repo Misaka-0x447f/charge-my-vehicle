@@ -23,4 +23,18 @@ namespace lang
             esp_deep_sleep_start();
         }
     }
+    struct FloatConvertResult {
+        float number;
+        bool error;
+    };
+    // Utility function to try converting a string to a number. Returns FloatConvertResult indicating success or failure.
+    lang::FloatConvertResult stringToFloat(const std::string& input) {
+        std::istringstream iss(input);
+        float number;
+        iss >> number;
+        if (!iss.fail() && iss.eof()) { // Check if conversion succeeded and reached the end of the string
+            return {number, false}; // Return number with error flag as false
+        }
+        return {0.0f, true}; // Return 0.0 with error flag as true if conversion fails
+    }
 }

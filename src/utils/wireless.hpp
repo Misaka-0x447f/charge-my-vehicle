@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../.config.hpp"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -55,9 +57,10 @@ namespace wireless
     }
     void connect()
         {
+
             s_wifi_event_group = xEventGroupCreate();
 
-            tcpip_adapter_init();
+            esp_netif_init();
             ESP_ERROR_CHECK(esp_event_loop_create_default());
 
             wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();

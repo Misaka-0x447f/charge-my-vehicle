@@ -127,7 +127,7 @@ namespace api
         body["corpNo"] = USER_CORP_NO;
         body["deviceNo"] = USER_DEVICE_NO;
         body["loginType"] = "SZAPP";
-        JsonDocument res = request::post(API_HOST, 6771, "/api/login", JsonDocument(), body);
+        JsonDocument res = request::post(String(API_ORIGIN) + "/api/login", JsonDocument(), body);
         std::string errorMsg = getErrorMsg(res);
         if (errorMsg != "")
         {
@@ -150,7 +150,7 @@ namespace api
         body["userPhone"] = USER_NAME;
         body["corpNo"] = USER_CORP_NO;
         body["pileCode"] = USER_PILE_CODE;
-        JsonDocument res = request::post(API_HOST, 6771, "/api/d1/app/custpile/pileInfo", header, body);
+        JsonDocument res = request::post(String(API_ORIGIN) + "/api/d1/app/custpile/pileInfo", header, body);
         std::string errorMsg = getErrorMsg(res);
         if (errorMsg != "")
         {

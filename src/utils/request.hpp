@@ -1,16 +1,18 @@
 #pragma once
 #include "../.config.hpp"
+#include "./wireless.hpp"
 #include <HTTPClient.h>
+#include <WiFi.h>
 #include <ArduinoJson.h>
 #include <string>
 
 namespace request
 {
-    JsonDocument post(String host, u16_t port, String path, JsonDocument header, JsonDocument body)
+    JsonDocument post(String path, JsonDocument header, JsonDocument body)
     {
         HTTPClient http;
 
-        http.begin(host, port, path);
+        http.begin(path.c_str());
 
         // Add headers
         for (JsonPair headerPair : header.as<JsonObject>())
